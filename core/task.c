@@ -6,6 +6,7 @@
  * Description: task management.
  ********************************************************/
 #include <core/eos.h>
+#include <core/eos_internal.h>
 
 // NEW, TERMINATED는 내가 만듦
 // #define NEW			0 
@@ -31,7 +32,7 @@ int32u_t eos_create_task(eos_tcb_t *task, addr_t sblock_start, size_t sblock_siz
 	(*task).state = READY;
 	// (*task).priority = priority;
 
-	_os_note_t * task_in_ready_queue = (_os_note_t *)task;
+	_os_node_t * task_in_ready_queue = (_os_node_t *)task;
 	_os_add_node_priority(_os_ready_queue, task_in_ready_queue);
 	task_in_ready_queue.ptr_data = task;
 	task_in_ready_queue.priority = priority;
