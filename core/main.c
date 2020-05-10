@@ -40,8 +40,10 @@ void _os_initialization() {
 	PRINT("finishing initialization. starting multitasking.\n");
 	_os_multitasking = 1;
 	eos_enable_interrupt();
+    PRINT("END ENABLE INTERRUPT \n");
 
 	eos_schedule();
+    PRINT("END eos_schedule \n");
 
 	// After finishing all initializations, OS enters loop.
 	while(1) {}

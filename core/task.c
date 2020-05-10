@@ -28,6 +28,8 @@ static eos_tcb_t *_os_current_task;
 int32u_t eos_create_task(eos_tcb_t *task, addr_t sblock_start, size_t sblock_size, void (*entry)(void *arg), void *arg, int32u_t priority) {
 	PRINT("task: 0x%x, priority: %d\n", (int32u_t)task, priority);
 	addr_t stack_ptr = _os_create_context(sblock_start, sblock_size, entry, arg);
+    PRINT("stack ptr is %s \n", *((int32u_t *)stack_ptr));
+
 	(*task).stack_ptr = stack_ptr;
 	(*task).state = READY;
 	// (*task).priority = priority;
@@ -67,14 +69,22 @@ void eos_schedule() {
 		}
 	} else { // if current task is not specified (thus, it's initialization.)
 		_os_node_t * first_node_in_queue = _os_ready_queue[0];
+        PRINT("get node in quere \n");
 			if (first_node_in_queue){
-				eos_tcb_t * next_task = (*first_node_in_queue).ptr_data;
-				addr_t stack_ptr = (*next_task).stack_ptr;
-
+                PRINT("in if statment \n");
+				eos_tcb_t * selected_task = (*first_node_in_queue).ptr_data;
+                PRINT("get next task \n");
+                PRINT("task address is 0x%x \n", (int32u_t)selected_task);
+				addr_t stack_ptr = (*selected_task).stack_ptr;
+                PRINT("yo 0x%x \n", (int32u_t *)stack_ptr)
+                PRINT("stack ptr get \n");
 				_os_remove_node(_os_ready_queue, first_node_in_queue);
+                PRINT("remove node \n");
 				_os_add_node_tail(_os_ready_queue, first_node_in_queue);
+                PRINT(" add node \n");
 
 				_os_restore_context(stack_ptr);
+                PRINT("Done restore \n")
 			} else { // this case, there is no ready task in ready queue
 				return;
 			}
