@@ -53,7 +53,7 @@ void _os_restore_context(addr_t sp) {
 		pop %%ecx;\
 		pop %%eax;\
 		pop _eflags;\
-		mov 4(%%esp), %%ebp;\
+		movl 4(%%esp), %%ebp;\
 		ret;\
         "
 		:: [sp] "m" (sp)
