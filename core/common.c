@@ -14,18 +14,22 @@ void eos_printf(const char *fmt, ...) {
 }
 
 void _os_add_node_tail(_os_node_t **head, _os_node_t *new_node) {
-	PRINT("add node tail \n");
+	// PRINT("add node tail \n");
     if (*head) {
-        PRINT("There is head \n");
-        PRINT("1 \n");
+        // PRINT("There is head \n");
+        // PRINT("1 \n");
 		new_node -> previous = (*head) -> previous;
-        PRINT("2 \n");
+		// PRINT("task in new_node : 0x%x \n", (int32u_t *)((*new_node).ptr_data));
+        // PRINT("2 \n");
 		(new_node -> previous) -> next = new_node;
-        PRINT("3 \n");
+		// PRINT("task in new_node : 0x%x \n", (int32u_t *)((*new_node).ptr_data));
+		// PRINT("3 \n");
 		new_node -> next = (*head);
-        PRINT("4 \n");
+		// PRINT("task in new_node : 0x%x \n", (int32u_t *)((*new_node).ptr_data));
+        // PRINT("4 \n");
 		(new_node -> next ) -> previous = new_node;
-        PRINT("5 \n");
+		// PRINT("task in new_node : 0x%x \n", (int32u_t *)((*new_node).ptr_data));
+        // PRINT("5 \n");
 	} else {
         PRINT("There is no head \n");
 		(*head) = new_node;
