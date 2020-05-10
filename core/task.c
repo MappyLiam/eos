@@ -27,15 +27,15 @@ static eos_tcb_t *_os_current_task;
 
 int32u_t eos_create_task(eos_tcb_t *task, addr_t sblock_start, size_t sblock_size, void (*entry)(void *arg), void *arg, int32u_t priority) {
 	PRINT("task: 0x%x, priority: %d\n", (int32u_t)task, priority);
-	addr_t stack_ptr = _os_create_context(sblock_start, sblock_size, entry, arg)
+	addr_t stack_ptr = _os_create_context(sblock_start, sblock_size, entry, arg);
 	(*task).stack_ptr = stack_ptr;
 	(*task).state = READY;
 	// (*task).priority = priority;
 
 	_os_node_t * task_in_ready_queue = (_os_node_t *)task;
 	_os_add_node_priority(_os_ready_queue, task_in_ready_queue);
-	task_in_ready_queue.ptr_data = task;
-	task_in_ready_queue.priority = priority;
+	(*task_in_ready_queue).ptr_data = task;
+	(*task_in_ready_queue).priority = priority;
 
 	return 0;
 }
@@ -44,7 +44,7 @@ int32u_t eos_destroy_task(eos_tcb_t *task) {
 }
 
 void eos_schedule() {
-	current_task = eos_get_current_task();
+	eos_tcb_t * current_task = eos_get_current_task();
 	if (current_task){ // if current task is specified
 		addr_t saved_stack_ptr = _os_save_context();
 		if (saved_stack_ptr != NULL){
@@ -52,7 +52,7 @@ void eos_schedule() {
 			
 			_os_node_t * first_node_in_queue = _os_ready_queue[0];
 			if (first_node_in_queue){
-				eos_tcb_t * next_task = first_node_in_queue.data_ptr;
+				eos_tcb_t * next_task = (*first_node_in_queue).ptr_data;
 				addr_t stack_ptr = (*next_task).stack_ptr;
 
 				_os_remove_node(_os_ready_queue, first_node_in_queue);
@@ -68,7 +68,7 @@ void eos_schedule() {
 	} else { // if current task is not specified (thus, it's initialization.)
 		_os_node_t * first_node_in_queue = _os_ready_queue[0];
 			if (first_node_in_queue){
-				eos_tcb_t * next_task = first_node_in_queue.data_ptr;
+				eos_tcb_t * next_task = (*first_node_in_queue).ptr_data;
 				addr_t stack_ptr = (*next_task).stack_ptr;
 
 				_os_remove_node(_os_ready_queue, first_node_in_queue);
