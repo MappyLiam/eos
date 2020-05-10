@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "eos.h": "c",
+        "eos_internal.h": "c",
+        "emulator_asm.h": "c"
+    }
+}
