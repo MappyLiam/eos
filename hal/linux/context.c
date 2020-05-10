@@ -43,7 +43,7 @@ addr_t _os_create_context(addr_t stack_base, size_t stack_size, void (*entry)(vo
 
 void _os_restore_context(addr_t sp) {
 	__asm__ __volatile__ ("\
-		mov %[sp] %%esp;\
+		mov %[sp], %%esp;\
 		pop %%edi;\
 		pop %%esi;\
 		pop %%ebx;\
@@ -51,7 +51,7 @@ void _os_restore_context(addr_t sp) {
 		pop %%ecx;\
 		pop %%eax;\
 		pop _eflags;\
-		mov 4(%%esp) %%ebp;\
+		mov 4(%%esp), %%ebp;\
 		ret;"
 		:: [sp] "m" (sp));
 }
@@ -67,10 +67,10 @@ addr_t _os_save_context() {
 		push %%ebx;\
 		push %%esi;\
 		push %%edi;\
-		mov %%esp %%eax;\
+		mov %%esp, %%eax;\
 		pushl 4(%%ebp);\
 		pushl 0(%%ebp);\
-		mov %%esp %%ebp;\
+		mov %%esp, %%ebp;\
 		resume_eip:;\
 		leave;\
 		ret;"
