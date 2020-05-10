@@ -70,20 +70,18 @@ void eos_schedule() {
 		if (saved_stack_ptr != NULL){
 			(*current_task).stack_ptr = saved_stack_ptr;
 			(*current_task).state = READY;
+			_os_add_node_tail(&_os_ready_queue[priority], &(*current_task).node_in_ready_queue);
 			// 왜 이 아래 PRINT만 있으면 잘 돌지? 
 			PRINT("saved_stack_ptr : 0x%x \n", (int32u_t *)saved_stack_ptr);
 			_os_node_t * first_node_in_queue = _os_ready_queue[priority];
 			if (first_node_in_queue){
-				eos_tcb_t * selected_task = (*first_node_in_queue).ptr_data;
-				(*selected_task).state = RUNNING;
-				_os_current_task = selected_task;
-				PRINT("selected task : 0x%x \n", (int32u_t *)selected_task);
-				addr_t stack_ptr = (*selected_task).stack_ptr;
-				PRINT("selected saved stack_ptr : 0x%x \n", (int32u_t *)stack_ptr);
+				_os_current_task = (*first_node_in_queue).ptr_data;
+				(*_os_current_task).state = RUNNING;
+				PRINT("selected task : 0x%x \n", (int32u_t *)_os_current_task);
+				PRINT("selected saved stack_ptr : 0x%x \n", (int32u_t *)(*_os_current_task).stack_ptr);
 				_os_remove_node(&_os_ready_queue[priority], first_node_in_queue);
-				_os_add_node_tail(&_os_ready_queue[priority], first_node_in_queue);
 				// PRINT("stack_ptr before restore_context: 0x%x \n", (int32u_t *)stack_ptr);
-				_os_restore_context((*selected_task).stack_ptr);
+				_os_restore_context((*_os_current_task).stack_ptr);
 				// PRINT("Done restore \n")
 			} else { // this case, there is no ready task in ready queue
 				return;
@@ -95,17 +93,13 @@ void eos_schedule() {
         // PRINT("first schedule \n");
 		_os_node_t * first_node_in_queue = _os_ready_queue[priority];
 		if (first_node_in_queue){
-			eos_tcb_t * selected_task = (*first_node_in_queue).ptr_data;
-			(*selected_task).state = RUNNING;
-			_os_current_task = selected_task;
-			PRINT("selected task : 0x%x \n", (int32u_t *)selected_task);
-			addr_t stack_ptr = (*selected_task).stack_ptr;
-			PRINT("selected saved stack_ptr : 0x%x \n", (int32u_t *)stack_ptr);
+			_os_current_task = (*first_node_in_queue).ptr_data;
+			(*_os_current_task).state = RUNNING;
+			PRINT("selected task : 0x%x \n", (int32u_t *)_os_current_task);
+			PRINT("selected saved stack_ptr : 0x%x \n", (int32u_t *)(*_os_current_task).stack_ptr);
 			_os_remove_node(&_os_ready_queue[priority], first_node_in_queue);
 			// PRINT("done remove node \n");
-			_os_add_node_tail(&_os_ready_queue[priority], first_node_in_queue);
-			// PRINT("done add node \n");
-			_os_restore_context((*selected_task).stack_ptr);
+			_os_restore_context((*_os_current_task).stack_ptr);
 			// PRINT("Done restore \n")
 		} else { // this case, there is no ready task in ready queue
 			return;
