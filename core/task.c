@@ -33,11 +33,10 @@ int32u_t eos_create_task(eos_tcb_t *task, addr_t sblock_start, size_t sblock_siz
 	(*task).stack_ptr = stack_ptr;
 	(*task).state = READY;
 	// (*task).priority = priority;
-
-	_os_node_t * task_in_ready_queue = (_os_node_t *)task;
-	_os_add_node_priority(_os_ready_queue, task_in_ready_queue);
-	(*task_in_ready_queue).ptr_data = task;
-	(*task_in_ready_queue).priority = priority;
+	_os_node_t * node_in_ready_queue = (*task).node_in_ready_queue;
+	_os_add_node_tail(&_os_ready_queue[priority], node_in_ready_queue);
+	(*node_in_ready_queue).ptr_data = task;
+	(*node_in_ready_queue).priority = priority;
 
 	return 0;
 }
@@ -47,18 +46,19 @@ int32u_t eos_destroy_task(eos_tcb_t *task) {
 
 void eos_schedule() {
 	eos_tcb_t * current_task = eos_get_current_task();
+	int32u_t priority = _os_get_highest_priority();
+	// TODO: 만약 위 priority안통하면, 
+	// 	처음에 priority에 맞는 위치 찾는 걸 _os_add_node_priority로 구현하자.
 	if (current_task){ // if current task is specified
 		addr_t saved_stack_ptr = _os_save_context();
 		if (saved_stack_ptr != NULL){
 			(*current_task).stack_ptr = saved_stack_ptr;
-			
-			_os_node_t * first_node_in_queue = _os_ready_queue[0];
+			_os_node_t * first_node_in_queue = _os_ready_queue[priority];
 			if (first_node_in_queue){
 				eos_tcb_t * next_task = (*first_node_in_queue).ptr_data;
 				addr_t stack_ptr = (*next_task).stack_ptr;
-
-				_os_remove_node(_os_ready_queue, first_node_in_queue);
-				_os_add_node_tail(_os_ready_queue, first_node_in_queue);
+				_os_remove_node(&_os_ready_queue[priority], first_node_in_queue);
+				_os_add_node_tail(&_os_ready_queue[priority], first_node_in_queue);
 
 				_os_restore_context(stack_ptr);
 			} else { // this case, there is no ready task in ready queue
@@ -68,26 +68,21 @@ void eos_schedule() {
 			return;
 		}
 	} else { // if current task is not specified (thus, it's initialization.)
-		_os_node_t * first_node_in_queue = _os_ready_queue[0];
-        PRINT("get node in quere \n");
-			if (first_node_in_queue){
-                PRINT("in if statment \n");
-				eos_tcb_t * selected_task = (*first_node_in_queue).ptr_data;
-                PRINT("get next task \n");
-                PRINT("task address is 0x%x \n", (int32u_t)selected_task);
-				addr_t stack_ptr = (*selected_task).stack_ptr;
-                PRINT("yo 0x%x \n", (int32u_t *)stack_ptr)
-                PRINT("stack ptr get \n");
-				_os_remove_node(_os_ready_queue, first_node_in_queue);
-                PRINT("remove node \n");
-				_os_add_node_tail(_os_ready_queue, first_node_in_queue);
-                PRINT(" add node \n");
-
-				_os_restore_context(stack_ptr);
-                PRINT("Done restore \n")
-			} else { // this case, there is no ready task in ready queue
-				return;
-			}
+		_os_node_t * first_node_in_queue = _os_ready_queue[priority];
+		if (first_node_in_queue){
+			eos_tcb_t * selected_task = (*first_node_in_queue).ptr_data;
+			PRINT("task address is 0x%x \n", (int32u_t)selected_task);
+			addr_t stack_ptr = (*selected_task).stack_ptr;
+			PRINT("stack_ptr address is 0x%x \n", (int32u_t *)stack_ptr)
+			_os_remove_node(&_os_ready_queue[priority], first_node_in_queue);
+			PRINT("done remove node \n");
+			_os_add_node_tail(&_os_ready_queue[priority], first_node_in_queue);
+			PRINT("done add node \n");
+			_os_restore_context(stack_ptr);
+			PRINT("Done restore \n")
+		} else { // this case, there is no ready task in ready queue
+			return;
+		}
 	}
 }
 

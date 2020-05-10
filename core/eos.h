@@ -82,6 +82,7 @@ typedef struct tcb {
 	int8u_t state; // new, running, waiting, ready, terminated
 	// int32u_t priority;
 	int8u_t period;
+	_os_node_t * node_in_ready_queue;
 	addr_t stack_ptr;
 } eos_tcb_t;
 
