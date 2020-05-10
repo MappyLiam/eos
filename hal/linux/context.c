@@ -30,6 +30,7 @@ addr_t _os_create_context(addr_t stack_base, size_t stack_size, void (*entry)(vo
 	int32u_t * stack_ptr = (int32u_t *)((int8u_t *)stack_base + stack_size);  // pointer연산 시, pointer자료형에 따라 더해지는 값이 달라진다. 
 																	 // stack_size는 byte(8bit)단위로 보기 위해 int8u_t으로 형변환하여 연산해준다.
 	// The reason of setting stack_ptr to int32u_t is to use increment/decrement address by 32bit(4byte) 
+    PRINT("stack base + size = 0x%x \n", stack_ptr);
     *(--stack_ptr) = (int32u_t *) arg;
 	*(--stack_ptr) = NULL;
 	*(--stack_ptr) = (int32u_t *) entry;
@@ -39,7 +40,6 @@ addr_t _os_create_context(addr_t stack_base, size_t stack_size, void (*entry)(vo
 		// register save, but the value is don't care, which is NULL
 		*(--stack_ptr) = NULL;
 	}
-    ++stack_ptr;
 	return (addr_t)stack_ptr;
 }
 
