@@ -27,7 +27,7 @@ void print_context(addr_t context) {
 // void (*entry)(void *) -> function pointer
 
 addr_t _os_create_context(addr_t stack_base, size_t stack_size, void (*entry)(void *), void *arg) {
-	int32u_t stack_ptr = (int32u_t *)((int8u_t *)stack_base + stack_size); // pointer연산 시, pointer자료형에 따라 더해지는 값이 달라진다. 
+	int32u_t * stack_ptr = (int32u_t *)((int8u_t *)stack_base + stack_size); // pointer연산 시, pointer자료형에 따라 더해지는 값이 달라진다. 
 																	 // stack_size는 byte(8bit)단위로 보기 위해 int8u_t으로 형변환하여 연산해준다.
 	// The reason of setting stack_ptr to int32u_t is to use increment/decrement address by 32bit(4byte) 
 	*(--stack_ptr) = *(int32u_t *) arg;
@@ -43,7 +43,7 @@ addr_t _os_create_context(addr_t stack_base, size_t stack_size, void (*entry)(vo
 
 void _os_restore_context(addr_t sp) {
 	__asm__ __volatile__ ("\
-		mov %[sp] %%esp
+		mov %[sp] %%esp;\
 		pop %%edi;\
 		pop %%esi;\
 		pop %%ebx;\
@@ -51,9 +51,8 @@ void _os_restore_context(addr_t sp) {
 		pop %%ecx;\
 		pop %%eax;\
 		pop _eflags;\
-		mov 4(%%esp) %%ebp
-		ret;
-		"
+		mov 4(%%esp) %%ebp;\
+		ret;"
 		:: [sp] "m" (sp));
 }
 
@@ -71,9 +70,9 @@ addr_t _os_save_context() {
 		mov %%esp %%eax;\
 		pushl 4(%%ebp);\
 		pushl 0(%%ebp);\
-		mov %%esp %%ebp;
-		resume_eip:
-		leave
-		ret"
+		mov %%esp %%ebp;\
+		resume_eip:;\
+		leave;\
+		ret;"
 		::);
 }
