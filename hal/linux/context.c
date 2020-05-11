@@ -24,13 +24,11 @@ void print_context(addr_t context) {
 	//...`
 }
 
-// void (*entry)(void *) -> function pointer
-
 addr_t _os_create_context(addr_t stack_base, size_t stack_size, void (*entry)(void *), void *arg) {
-	int32u_t * stack_ptr = (int32u_t *)((int8u_t *)stack_base + stack_size);  // pointer연산 시, pointer자료형에 따라 더해지는 값이 달라진다. 
-																	 // stack_size는 byte(8bit)단위로 보기 위해 int8u_t으로 형변환하여 연산해준다.
-	// The reason of setting stack_ptr to int32u_t is to use increment/decrement address by 32bit(4byte) 
-    PRINT("stack base + size = 0x%x \n", stack_ptr);
+	int32u_t * stack_ptr = (int32u_t *)((int8u_t *)stack_base + stack_size);  
+		// In pointer operation, the increment/decrement value varies depending on pointer type
+		// So converted type of stack_base to (int8u_t *) to treat unit of stack_size as byte(8bit)
+		// The reason of setting stack_ptr to int32u_t is to use increment/decrement address by 32bit(4byte) in the following
     *(--stack_ptr) = (int32u_t) arg;
 	*(--stack_ptr) = (int32u_t) NULL;
 	*(--stack_ptr) = (int32u_t) entry;
@@ -63,14 +61,14 @@ void _os_restore_context(addr_t sp) {
 addr_t _os_save_context() {
 	// eax에 esp를 넣는 부분이, return 값을 넣어주는 부분이다. 
 	__asm__ __volatile__ ("\
-		push $resume_eip;\
-		push _eflags;\
-		push %%eax;\
-		push %%ecx;\
-		push %%edx;\
-		push %%ebx;\
-		push %%esi;\
-		push %%edi;\
+		pushl $resume_eip;\
+		pushl _eflags;\
+		pushl %%eax;\
+		pushl %%ecx;\
+		pushl %%edx;\
+		pushl %%ebx;\
+		pushl %%esi;\
+		pushl %%edi;\
 		movl %%esp, %%eax;\
 		pushl 4(%%ebp);\
 		pushl 0(%%ebp);\
