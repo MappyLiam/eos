@@ -56,54 +56,31 @@ int32u_t eos_destroy_task(eos_tcb_t *task) {
 }
 
 void eos_schedule() {
-	eos_tcb_t * current_task = eos_get_current_task();
-	int32u_t priority = _os_get_highest_priority();
-    priority = 0;
-    // PRINT("priority is %d \n", priority);
-	// TODO: 만약 위 priority안통하면, 
-	// 	처음에 priority에 맞는 위치 찾는 걸 _os_add_node_priority로 구현하자.
-	if (current_task){ // if current task is specified
-        // PRINT("current task is specified \n");
-		PRINT("restored stack ptr : 0x%x \n", (int32u_t *)(*current_task).stack_ptr);
+	eos_tcb_t * is_there_current_task = eos_get_current_task();
+
+	if (is_there_current_task){ // if current task is specified
 		addr_t saved_stack_ptr = _os_save_context();
-		// PRINT("saved_stack_ptr : 0x%x \n", (int32u_t *)saved_stack_ptr);
 		if (saved_stack_ptr != NULL){
-			(*current_task).stack_ptr = saved_stack_ptr;
-			(*current_task).state = READY;
-			_os_add_node_tail(&_os_ready_queue[priority], &(*current_task).node_in_ready_queue);
-			// 왜 이 아래 PRINT만 있으면 잘 돌지? 
-			PRINT("saved_stack_ptr : 0x%x \n", (int32u_t *)saved_stack_ptr);
-			_os_node_t * first_node_in_queue = _os_ready_queue[priority];
-			if (first_node_in_queue){
-				_os_current_task = (*first_node_in_queue).ptr_data;
-				(*_os_current_task).state = RUNNING;
-				PRINT("selected task : 0x%x \n", (int32u_t *)_os_current_task);
-				PRINT("selected saved stack_ptr : 0x%x \n", (int32u_t *)(*_os_current_task).stack_ptr);
-				_os_remove_node(&_os_ready_queue[priority], first_node_in_queue);
-				// PRINT("stack_ptr before restore_context: 0x%x \n", (int32u_t *)stack_ptr);
-				_os_restore_context((*_os_current_task).stack_ptr);
-				// PRINT("Done restore \n")
-			} else { // this case, there is no ready task in ready queue
-				return;
-			}
+			// PRINT("current_task : 0x%x \n", current_task);
+			// PRINT("_os_current_task : 0x%x \n", _os_current_task);
+
+			(*_os_current_task).stack_ptr = saved_stack_ptr;
+			(*_os_current_task).state = READY;
+			_os_add_node_tail(&_os_ready_queue[(*_os_current_task).node_in_ready_queue.priority], &((*_os_current_task).node_in_ready_queue));
 		} else { // if it's right after the context is restored
 			return;
 		}
-	} else { // if current task is not specified (thus, it's initialization.)
-        // PRINT("first schedule \n");
-		_os_node_t * first_node_in_queue = _os_ready_queue[priority];
-		if (first_node_in_queue){
-			_os_current_task = (*first_node_in_queue).ptr_data;
-			(*_os_current_task).state = RUNNING;
-			PRINT("selected task : 0x%x \n", (int32u_t *)_os_current_task);
-			PRINT("selected saved stack_ptr : 0x%x \n", (int32u_t *)(*_os_current_task).stack_ptr);
-			_os_remove_node(&_os_ready_queue[priority], first_node_in_queue);
-			// PRINT("done remove node \n");
-			_os_restore_context((*_os_current_task).stack_ptr);
-			// PRINT("Done restore \n")
-		} else { // this case, there is no ready task in ready queue
-			return;
-		}
+	}
+
+	int32u_t priority = _os_get_highest_priority(); // TODO: 동작방식 알아야.
+	_os_node_t * first_node_in_queue = _os_ready_queue[priority];
+	if (first_node_in_queue){
+		_os_remove_node(&_os_ready_queue[priority], first_node_in_queue);
+		_os_current_task = (*first_node_in_queue).ptr_data;
+		(*_os_current_task).state = RUNNING;
+		_os_restore_context((*_os_current_task).stack_ptr);
+	} else { // this case, there is no ready task in ready queue
+		return;
 	}
 }
 

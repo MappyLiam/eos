@@ -31,14 +31,14 @@ addr_t _os_create_context(addr_t stack_base, size_t stack_size, void (*entry)(vo
 																	 // stack_size는 byte(8bit)단위로 보기 위해 int8u_t으로 형변환하여 연산해준다.
 	// The reason of setting stack_ptr to int32u_t is to use increment/decrement address by 32bit(4byte) 
     PRINT("stack base + size = 0x%x \n", stack_ptr);
-    *(--stack_ptr) = (int32u_t *) arg;
-	*(--stack_ptr) = NULL;
-	*(--stack_ptr) = (int32u_t *) entry;
+    *(--stack_ptr) = (int32u_t) arg;
+	*(--stack_ptr) = (int32u_t) NULL;
+	*(--stack_ptr) = (int32u_t) entry;
 	*(--stack_ptr) = 1;
 
 	for(int8u_t i = 0; i < 6; i++){
 		// register save, but the value is don't care, which is NULL
-		*(--stack_ptr) = NULL;
+		*(--stack_ptr) = (int32u_t) NULL;
 	}
 	return (addr_t)stack_ptr;
 }
@@ -46,13 +46,13 @@ addr_t _os_create_context(addr_t stack_base, size_t stack_size, void (*entry)(vo
 void _os_restore_context(addr_t sp) {
 	__asm__ __volatile__ ("\
 		movl %[sp], %%esp;\
-		pop %%edi;\
-		pop %%esi;\
-		pop %%ebx;\
-		pop %%edx;\
-		pop %%ecx;\
-		pop %%eax;\
-		pop _eflags;\
+		popl %%edi;\
+		popl %%esi;\
+		popl %%ebx;\
+		popl %%edx;\
+		popl %%ecx;\
+		popl %%eax;\
+		popl _eflags;\
 		movl 4(%%esp), %%ebp;\
 		ret;\
         "
@@ -71,11 +71,11 @@ addr_t _os_save_context() {
 		push %%ebx;\
 		push %%esi;\
 		push %%edi;\
-		mov %%esp, %%eax;\
+		movl %%esp, %%eax;\
 		pushl 4(%%ebp);\
 		pushl 0(%%ebp);\
-		mov %%esp, %%ebp;\
-		resume_eip:;\
+		movl %%esp, %%ebp;\
+		resume_eip: \
 		leave;\
 		ret;"
 		::);
