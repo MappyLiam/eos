@@ -16,6 +16,17 @@ int8u_t eos_init_counter(eos_counter_t *counter, int32u_t init_value) {
 }
 
 void eos_set_alarm(eos_counter_t* counter, eos_alarm_t* alarm, int32u_t timeout, void (*entry)(void *arg), void *arg) {
+	// 카운터의 alarm queue에서 해당 알람을 제거
+	_os_remove_node(&(*counter).alarm_queue, &(*alarm).alarm_queue_node);
+	if (timeout == 0 || entry == NULL) {
+		return;
+	}
+	(*alarm).timeout = timeout;
+	(*alarm).handler = entry;
+	(*alarm).arg = arg;
+	(*alarm).alarm_queue_node.ptr_data = alarm;
+	(*alarm).alarm_queue_node.priority = timeout; // use timeout as priority
+	_os_add_node_priority(&(*counter).alarm_queue, &(*alarm).alarm_queue_node);
 }
 
 eos_counter_t* eos_get_system_timer() {
@@ -24,6 +35,20 @@ eos_counter_t* eos_get_system_timer() {
 
 void eos_trigger_counter(eos_counter_t* counter) {
 	PRINT("tick\n");
+	(*counter).tick += 1;
+	while (1) {
+		_os_node_t * alarm_queue = (counter -> alarm_queue);
+		if (alarm_queue != NULL){
+			// If alarm queue is not empty,
+			eos_alarm_t* cur_alarm = (alarm_queue -> ptr_data);
+			if ((cur_alarm -> timeout) == (*counter).tick){
+				// Make all timeout task READY
+				eos_set_alarm(counter, cur_alarm, 0, NULL, NULL); // remove alarm from alarm queue
+				(cur_alarm -> handler)(cur_alarm -> arg); // call _os_wakeup_sleeping_task
+			} else break;
+		} else break;
+	}
+	eos_schedule();
 }
 
 /* Timer interrupt handler */
