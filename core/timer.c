@@ -16,8 +16,7 @@ int8u_t eos_init_counter(eos_counter_t *counter, int32u_t init_value) {
 }
 
 void eos_set_alarm(eos_counter_t* counter, eos_alarm_t* alarm, int32u_t timeout, void (*entry)(void *arg), void *arg) {
-	// 카운터의 alarm queue에서 해당 알람을 제거
-	_os_remove_node(&(*counter).alarm_queue, &(*alarm).alarm_queue_node);
+	_os_remove_node(&(*counter).alarm_queue, &(*alarm).alarm_queue_node); // remove alarm from alarm queue
 	if (timeout == 0 || entry == NULL) {
 		return;
 	}
