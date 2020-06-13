@@ -16,11 +16,13 @@ void eos_printf(const char *fmt, ...) {
 void _os_add_node_tail(_os_node_t **head, _os_node_t *new_node) {
     // PRINT("ADD NODE QUEUE\n");
 	if (*head) {
+		// PRINT("Already head\n");
 		new_node -> previous = (*head) -> previous;
 		(new_node -> previous) -> next = new_node;
 		new_node -> next = (*head);
 		(new_node -> next ) -> previous = new_node;
 	} else {
+		// PRINT("No head\n");
 		(*head) = new_node;
 		new_node -> previous = new_node;
 		new_node -> next = new_node;
@@ -35,8 +37,10 @@ void _os_add_node_priority(_os_node_t **head, _os_node_t *new_node) {
 	 if (*head) {
 	 	node = (*head);
 	 	if (node -> priority > new_node -> priority) {
+			// PRINT("New head\n");
 	 		(*head) = new_node;
 	 	} else {
+			// PRINT("Already head\n");
 	 		node = node -> next;
 	 		while ((node -> priority <= new_node -> priority) && node != (*head)) {
 	 			node = node -> next;
@@ -47,6 +51,7 @@ void _os_add_node_priority(_os_node_t **head, _os_node_t *new_node) {
         new_node -> next = node;
         (new_node -> next) -> previous = new_node;
 	 } else {
+		//  PRINT("No head\n");
 	 	(*head) = new_node;
 	 	new_node -> previous = new_node;
 	 	new_node -> next = new_node;
