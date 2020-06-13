@@ -36,7 +36,7 @@ eos_counter_t* eos_get_system_timer() {
 
 void eos_trigger_counter(eos_counter_t* counter) {
 	PRINT("tick\n");
-	(*counter).tick += 1;
+	(*counter).tick++;
 	while (1) {
 		_os_node_t * alarm_queue = (counter -> alarm_queue);
 		if (alarm_queue != NULL){

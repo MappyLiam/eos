@@ -88,6 +88,8 @@ typedef struct tcb {
 	void (*entry)(void *);
 	void *arg;
 	_os_node_t node_of_queue;
+
+	eos_alarm_t alarm;
 } eos_tcb_t;
 
 /*
