@@ -22,6 +22,7 @@ void eos_set_alarm(eos_counter_t* counter, eos_alarm_t* alarm, int32u_t timeout,
 	if (timeout == 0 || entry == NULL) {
 		return;
 	}
+	// PRINT("Set alarm timeout - %d\n", timeout);
 	(*alarm).timeout = timeout;
 	(*alarm).handler = entry;
 	(*alarm).arg = arg;
@@ -35,15 +36,20 @@ eos_counter_t* eos_get_system_timer() {
 }
 
 void eos_trigger_counter(eos_counter_t* counter) {
-	PRINT("tick - %d\n", (*counter).tick);
 	(*counter).tick++;
+	PRINT("tick - %d\n", (*counter).tick);
 	while (1) {
 		_os_node_t * alarm_queue = (counter -> alarm_queue);
+		PRINT("is alarm queue null?\n");
 		if (alarm_queue != NULL){
+			PRINT("Not null\n");
+
 			// If alarm queue is not empty,
 			eos_alarm_t* cur_alarm = (alarm_queue -> ptr_data);
+			PRINT("Smallest timeout is - %d\n", cur_alarm->timeout);
 			if ((cur_alarm -> timeout) == (*counter).tick){
 				// Make all timeout task READY
+				PRINT("TIMEOUT!\n");
 				eos_set_alarm(counter, cur_alarm, 0, NULL, NULL); // remove alarm from alarm queue
 				(cur_alarm -> handler)(cur_alarm -> arg); // call _os_wakeup_sleeping_task
 			} else break;

@@ -48,7 +48,7 @@ int32u_t eos_acquire_semaphore(eos_semaphore_t *sem, int32s_t timeout) {
 			// PRINT("Timeout > 0 !\n");
 			eos_tcb_t * cur_task = eos_get_current_task();
 			(*cur_task).state = WAITING;
-			int32u_t alarm_timeout = timeout + (*cur_task).start_time;
+			int32u_t alarm_timeout = timeout + eos_get_system_timer()->tick;
 			wakeup_args_t wakeup_args;
 			wakeup_args.task = cur_task;
 			wakeup_args.sem = sem;
@@ -59,7 +59,7 @@ int32u_t eos_acquire_semaphore(eos_semaphore_t *sem, int32s_t timeout) {
 			// PRINT("Timeout 0 !\n");
 			eos_schedule();
 		}
-		// PRINT("Go again\n");
+		PRINT("Go again\n");
 		eos_disable_interrupt();
 		// wait하고 돌아오면 다시 체크
 		if ((*sem).count > 0){
