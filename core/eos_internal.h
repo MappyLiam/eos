@@ -79,6 +79,7 @@ extern void _os_wait(_os_node_t **wait_queue);
 extern void _os_wakeup_single(_os_node_t **wait_queue, int32u_t suspend_type);
 extern void _os_wakeup_all(_os_node_t **wait_queue, int32u_t suspend_type);
 extern void _os_wakeup_sleeping_task(void *arg);
+extern void _os_wakeup_sleeping_task_in_waiting_queue(void *arg);
 
 
 /********************************************************

@@ -19,44 +19,51 @@ void eos_init_semaphore(eos_semaphore_t *sem, int32u_t initial_count, int8u_t qu
 }
 
 int32u_t eos_acquire_semaphore(eos_semaphore_t *sem, int32s_t timeout) {
+    // PRINT("In acquire semaphore\n");
 	eos_disable_interrupt();
-	// PRINT("sem count is - ");
-	// printf("%d\n", (*sem).count);
-	if ((*sem).count-- > 0){
-		// PRINT("sem decrement - so, %d\n", (*sem).count);
+	if ((*sem).count > 0){
+		(*sem).count--;
 		eos_enable_interrupt();
 		return 1;
 	}
-	// PRINT("sem decrement - so, %d\n", (*sem).count);
 	eos_enable_interrupt();
 
 	if (timeout == -1) {
-		(*sem).count++;
-		// PRINT("sem increment - so, %d\n", (*sem).count);
 		return 0;
 	} 
 
 	while(1){
+		// PRINT("Loop! \n");
 		eos_tcb_t* cur_task = eos_get_current_task();
 		(*cur_task).state = WAITING;
-		// PRINT("queue type - %d\n", (*sem).queue_type);
 		if ((*sem).queue_type == FIFO){
+			// PRINT("Add node FIFO\n");
 			_os_add_node_tail(&(*sem).wait_queue, &(*cur_task).node_of_queue);
 		} else if ((*sem).queue_type == PRIORITY){
+			// PRINT("Add node Priority\n");
 			_os_add_node_priority(&(*sem).wait_queue, &(*cur_task).node_of_queue);
 		}
 		if (timeout > 0) {
 			// timeout 동안만 대기
-			eos_sleep(0); // TODO: eos set alarm대신 이를 사용했는데, 괜찮은지 확인. unset ready부분이 어처피 들어가더라고.
+			// PRINT("Timeout > 0 !\n");
+			eos_tcb_t * cur_task = eos_get_current_task();
+			(*cur_task).state = WAITING;
+			int32u_t alarm_timeout = timeout + (*cur_task).start_time;
+			wakeup_args_t wakeup_args;
+			wakeup_args.task = cur_task;
+			wakeup_args.sem = sem;
+			eos_set_alarm(eos_get_system_timer(), &(*cur_task).alarm, alarm_timeout, _os_wakeup_sleeping_task_in_waiting_queue, &wakeup_args);
+			eos_schedule();
 		} else { // timeout == 0
 			// 다른 태스크 반환될 때 까지 wait queue에서 대기
+			// PRINT("Timeout 0 !\n");
 			eos_schedule();
 		}
+		// PRINT("Go again\n");
 		eos_disable_interrupt();
 		// wait하고 돌아오면 다시 체크
-		// PRINT("sem count %d\n", (*sem).count);
-		if ((*sem).count >= 0){
-			// PRINT("GET Semaphore!\n");
+		if ((*sem).count > 0){
+			(*sem).count--;
 			eos_enable_interrupt();
 			return 1;
 		}
@@ -65,30 +72,23 @@ int32u_t eos_acquire_semaphore(eos_semaphore_t *sem, int32s_t timeout) {
 }
 
 void eos_release_semaphore(eos_semaphore_t *sem) {
+	// PRINT("In release semaphore\n");
 	eos_disable_interrupt();
-	// PRINT("Befo add sem count - %d\n", (*sem).count);
-	// (*sem).count++;
-	// if ((_os_node_t*)(*sem).wait_queue != NULL) {
-	if ((*sem).count++ < 0) {
-		// PRINT("After add sem count - %d\n", (*sem).count);
+	(*sem).count++;
+	if (sem->wait_queue != NULL) {
 		eos_enable_interrupt();
 		// wait queue에서 해당 task를 제거
+		// PRINT("Check here\n");
 		_os_node_t* wait_queue = (_os_node_t*)(*sem).wait_queue;
+		// PRINT("Or here\n");
 		eos_tcb_t* wait_task = (eos_tcb_t*)(*wait_queue).ptr_data;
-		PRINT("\n");
-		for(int i = 0; i < 5; i++){
-			printf("%d ", (wait_task -> node_of_queue).priority);
-		}
-		printf("\n");
+		// PRINT("Befo remove wait node\n");
 		_os_remove_node(&sem->wait_queue, &(*wait_task).node_of_queue);
-
+		// PRINT("After remove wait node\n");
 		// ready Queue에서 확인되도록, task의 priority를 set ready
-		// PRINT("Befo Wakeup\n");
 		_os_wakeup_sleeping_task(wait_task);
-		// PRINT("After Wakeup\n");
-		// PRINT("Made the priority ready %d\n", priority);
 	} else {
-		// PRINT("After add sem count - %d\n", (*sem).count);
+		// PRINT("nothing waiting\n");
 		eos_enable_interrupt();
 	}
 }

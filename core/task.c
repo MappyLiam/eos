@@ -58,11 +58,9 @@ void eos_schedule() {
 			(*_os_current_task).stack_ptr = saved_stack_ptr;
 			if ((*_os_current_task).state == WAITING){
 				// If it's sleep now, don't set ready
-				// PRINT("It's waiting. So not into ready queue\n");
 			} else {
 				(*_os_current_task).state = READY;
 				(*_os_current_task).start_time = eos_get_system_timer()->tick;
-				// PRINT("Add to ready queue\n");
 				_os_set_ready((_os_current_task -> node_of_queue).priority);
 				_os_add_node_tail(&_os_ready_queue[(*_os_current_task).node_of_queue.priority], &((*_os_current_task).node_of_queue));
 			}
@@ -70,13 +68,9 @@ void eos_schedule() {
 			return;
 		}
 	}
-	// PRINT("befo get priority\n");
 	int32u_t priority = _os_get_highest_priority();
-	// PRINT("PRIORITY - %d\n", priority);
 	_os_node_t * first_node_in_queue = _os_ready_queue[priority];
-	// PRINT("Befo Go to remove\n");
 	_os_remove_node(&_os_ready_queue[priority], first_node_in_queue);
-	// PRINT("After Go to Remove\n");
 
 	// if there's no more node in queue, then unset
 	if (_os_ready_queue[priority] == NULL) {
@@ -113,25 +107,10 @@ int32u_t eos_resume_task(eos_tcb_t *task) {
 }
 
 void eos_sleep(int32u_t tick) {
-	// PRINT("sleep start\n");
-	// eos_alarm_t alarm;
-	// alarm.alarm_queue_node.next = (_os_node_t *)NULL;
-	// alarm.alarm_queue_node.previous = (_os_node_t *)NULL;
 	eos_tcb_t * cur_task = eos_get_current_task();
 	(*cur_task).state = WAITING;
 	int32u_t timeout = (*cur_task).period + (*cur_task).start_time;
-	// int32u_t priority = (*cur_task).node_of_queue.priority;
-	
-	// _os_node_t * cur_node = &((*cur_task).node_of_queue);
-	// if (cur_node->next == cur_node-> previous){
-	// 	// Thus, if this node is head
-	// 	// Oh.. It's a bit wrong. There's no logic for unsetting ready of unhead node
-	// 	// PRINT("Unset ready\n");
-	// 	_os_unset_ready(priority);
-	// }
-	// PRINT("befo set alarm\n");
 	eos_set_alarm(eos_get_system_timer(), &(*cur_task).alarm, timeout, _os_wakeup_sleeping_task, cur_task);
-	// PRINT("after set alarm\n");
 	eos_schedule();
 }
 
@@ -163,6 +142,29 @@ _os_node_t * _get_os_ready_queue() {
 
 void _os_wakeup_sleeping_task(void *arg) {
 	eos_tcb_t * task = (eos_tcb_t *) arg;
+	int32u_t priority = (task -> node_of_queue).priority;
+	_os_set_ready(priority);
+	(*task).start_time = eos_get_system_timer()->tick;
+	(*task).state = READY;
+	_os_add_node_tail(&_os_ready_queue[priority], &(*task).node_of_queue);
+}
+
+
+
+void _os_wakeup_sleeping_task_in_waiting_queue(void *arg) {
+	// remove in waiting queue
+	// add node in ready queue
+	// PRINT("In wakeup sleeping task in waiting queue\n");
+	wakeup_args_t * wakeup_args = (wakeup_args_t *)arg;
+	eos_tcb_t * task = wakeup_args->task;
+	eos_semaphore_t * sem = wakeup_args->sem;
+
+	// wait queue에서 해당 task를 제거
+	_os_node_t* wait_queue = (_os_node_t*)(*sem).wait_queue;
+	//.. eos_tcb_t* wait_task = (eos_tcb_t*)(*wait_queue).ptr_data;
+	_os_remove_node(&(sem->wait_queue), &(*task).node_of_queue);
+
+	// task를 ready queue에 추가
 	int32u_t priority = (task -> node_of_queue).priority;
 	_os_set_ready(priority);
 	(*task).start_time = eos_get_system_timer()->tick;

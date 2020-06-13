@@ -179,6 +179,11 @@ typedef struct eos_condition {
 	int8u_t queue_type;
 } eos_condition_t;
 
+typedef struct wakeup_args_for_waiting {
+	eos_tcb_t * task;
+	eos_semaphore_t * sem;
+} wakeup_args_t;
+
 /*
  * Initialized Condition.
  * User should allocate memory for the semaphore structure before calling this function.
@@ -253,7 +258,6 @@ typedef struct eos_mqueue {
 	void * queue_start;
 	void * front;
 	void * rear;
-	void * last;
 	int8u_t queue_type;
 	eos_semaphore_t putsem;
 	eos_semaphore_t getsem;
