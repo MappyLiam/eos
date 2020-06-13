@@ -80,7 +80,7 @@ void eos_release_semaphore(eos_semaphore_t *sem) {
 			printf("%d ", (wait_task -> node_of_queue).priority);
 		}
 		printf("\n");
-		_os_remove_node(&wait_queue, &(*wait_task).node_of_queue);
+		_os_remove_node(&sem->wait_queue, &(*wait_task).node_of_queue);
 
 		// ready Queue에서 확인되도록, task의 priority를 set ready
 		// PRINT("Befo Wakeup\n");
