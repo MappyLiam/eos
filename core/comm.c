@@ -20,21 +20,21 @@ void eos_init_mqueue(eos_mqueue_t *mq, void *queue_start, int16u_t queue_size, i
 }
 
 int8u_t eos_send_message(eos_mqueue_t *mq, void *message, int32s_t timeout) {
-    PRINT("eos_send_message\n");
+    // PRINT("eos_send_message\n");
     if (eos_acquire_semaphore(&mq -> putsem, timeout)){ 
         // semaphore 획득 성공
         for(int8u_t i = 0; i < mq -> msg_size; i++){
             if (!(mq -> front)){ // Null일 경우, queue의 첫 값으로 초기화
-                PRINT("Make rear, front UN Null\n");
+                // PRINT("Make rear, front UN Null\n");
                 mq -> front = mq -> queue_start;
                 mq -> rear = (int8u_t *)(mq -> front) - 1;
             }
             *(int8u_t *)++(mq -> rear) = ((int8u_t *)message)[i];
         }
-        PRINT("Message is - %s\n", (int8u_t *)mq->front)
-        PRINT("release\n");
+        // PRINT("Message is - %s\n", (int8u_t *)mq->front)
+        // PRINT("release\n");
         eos_release_semaphore(&(mq -> getsem));
-        PRINT("done release\n");
+        // PRINT("done release\n");
     } else { 
         // semaphore 획득 실패
     }
@@ -48,7 +48,7 @@ int8u_t eos_receive_message(eos_mqueue_t *mq, void *message, int32s_t timeout) {
         for(int8u_t i = 0; i < mq -> msg_size; i++){
             ((int8u_t *)message)[i] = *((int8u_t* )(mq -> front)++);
             if (mq -> rear == (int8u_t *)(mq -> queue_start) - 1){ // queue에 데이터가 없을 경우, Null로
-                PRINT("Make rear, front NULL");
+                // PRINT("Make rear, front NULL");
                 mq -> rear = mq -> front = NULL;
             }
         }

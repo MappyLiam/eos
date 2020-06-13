@@ -80,7 +80,7 @@ void eos_schedule() {
 
 	// if there's no more node in queue, then unset
 	if (_os_ready_queue[priority] == NULL) {
-		// PRINT("Unser Ready priority - %d\n", priority);
+		// PRINT("Unset Ready priority - %d\n", priority);
 		_os_unset_ready(priority);
 	}
 	
@@ -158,7 +158,7 @@ void _os_wakeup_all(_os_node_t **wait_queue, int32u_t queue_type) {
 }
 
 _os_node_t * _get_os_ready_queue() {
-	return _os_ready_queue;
+	return *_os_ready_queue;
 }
 
 void _os_wakeup_sleeping_task(void *arg) {
