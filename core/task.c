@@ -149,19 +149,13 @@ void _os_wakeup_sleeping_task(void *arg) {
 	_os_add_node_tail(&_os_ready_queue[priority], &(*task).node_of_queue);
 }
 
-
-
 void _os_wakeup_sleeping_task_in_waiting_queue(void *arg) {
-	// remove in waiting queue
-	// add node in ready queue
-	// PRINT("In wakeup sleeping task in waiting queue\n");
 	wakeup_args_t * wakeup_args = (wakeup_args_t *)arg;
 	eos_tcb_t * task = wakeup_args->task;
 	eos_semaphore_t * sem = wakeup_args->sem;
 
 	// wait queue에서 해당 task를 제거
 	_os_node_t* wait_queue = (_os_node_t*)(*sem).wait_queue;
-	//.. eos_tcb_t* wait_task = (eos_tcb_t*)(*wait_queue).ptr_data;
 	_os_remove_node(&(sem->wait_queue), &(*task).node_of_queue);
 
 	// task를 ready queue에 추가
