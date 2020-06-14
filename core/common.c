@@ -14,15 +14,12 @@ void eos_printf(const char *fmt, ...) {
 }
 
 void _os_add_node_tail(_os_node_t **head, _os_node_t *new_node) {
-    // PRINT("ADD NODE QUEUE\n");
 	if (*head) {
-		// PRINT("Already head\n");
 		new_node -> previous = (*head) -> previous;
 		(new_node -> previous) -> next = new_node;
 		new_node -> next = (*head);
 		(new_node -> next ) -> previous = new_node;
 	} else {
-		// PRINT("No head\n");
 		(*head) = new_node;
 		new_node -> previous = new_node;
 		new_node -> next = new_node;
@@ -31,16 +28,12 @@ void _os_add_node_tail(_os_node_t **head, _os_node_t *new_node) {
 
 /* ascending order */
 void _os_add_node_priority(_os_node_t **head, _os_node_t *new_node) {
-	//  PRINT("ADD NODE PRIORITY QUEUE\n");
 	 _os_node_t *node;
-	 
 	 if (*head) {
 	 	node = (*head);
 	 	if (node -> priority > new_node -> priority) {
-			// PRINT("New head\n");
 	 		(*head) = new_node;
 	 	} else {
-			// PRINT("Already head\n");
 	 		node = node -> next;
 	 		while ((node -> priority <= new_node -> priority) && node != (*head)) {
 	 			node = node -> next;
@@ -51,7 +44,6 @@ void _os_add_node_priority(_os_node_t **head, _os_node_t *new_node) {
         new_node -> next = node;
         (new_node -> next) -> previous = new_node;
 	 } else {
-		//  PRINT("No head\n");
 	 	(*head) = new_node;
 	 	new_node -> previous = new_node;
 	 	new_node -> next = new_node;
@@ -60,25 +52,17 @@ void _os_add_node_priority(_os_node_t **head, _os_node_t *new_node) {
 
 int32u_t _os_remove_node(_os_node_t **head, _os_node_t *node) {
 	// if the node doesn't exist in the list
-	// PRINT("REMOVE NODE QUEUE\n");
 	if (node->next == NULL || node->previous == NULL) return 0;
-	// PRINT("11\n");
 	if (node -> next == node) {
-		// PRINT("head\n");
 		(*head) = NULL;
 	} else {
-		// PRINT("not head\n");
 		(node -> previous) -> next = node -> next;
 		(node -> next) -> previous = node -> previous;
-		// PRINT("dd\n");
 
 		if (node == *head) {
-			// PRINT("if its head\n");
-
 			*head = node -> next;
 		}
 	}
-	// PRINT("33\n");
 	node->next = NULL;
 	node->previous = NULL;
 

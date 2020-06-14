@@ -74,7 +74,6 @@ void eos_schedule() {
 
 	// if there's no more node in queue, then unset
 	if (_os_ready_queue[priority] == NULL) {
-		// PRINT("Unset Ready priority - %d\n", priority);
 		_os_unset_ready(priority);
 	}
 	
