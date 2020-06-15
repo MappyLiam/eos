@@ -37,9 +37,9 @@ static void sender_task(void *arg) {
 	int8u_t *data = "xy";
 	while (1) {
 		PRINT("send message to mq1\n"); 
-		eos_send_message(&mq1, data, 1); 
+		eos_send_message(&mq1, data, 0); 
 		PRINT("send message to mq2\n"); 
-		eos_send_message(&mq2, data, 1); 
+		eos_send_message(&mq2, data, 0); 
 		eos_sleep(0);
 	}
 }
